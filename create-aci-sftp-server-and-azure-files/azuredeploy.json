@@ -42,7 +42,7 @@
         "containerGroupDNSLabel": {
             "type": "string",
             "defaultValue": "[uniqueString(resourceGroup().id, deployment().name)]",
-            "metadata" : {
+            "metadata": {
                 "description": "DNS label for container group"
             }
         }
@@ -50,15 +50,14 @@
     "variables": {
         "cliContainerName": "create-share",
         "cliContainerGroupName": "create-share-group",
-        "cliContainerImage": "microsoft/azure-cli:latest",
+        "cliContainerImage": "mcr.microsoft.com/azure-cli",
         "sftpContainerName": "sftp",
         "sftpContainerGroupName": "sftp-group",
         "sftpContainerImage": "atmoz/sftp:latest",
         "sftpEnvVariable": "[concat(parameters('sftpUser'), ':', parameters('sftpPassword'), ':1001')]",
         "storageAccountName": "[concat('sftpstg', uniqueString(resourceGroup().id))]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Resources/deployments",
             "name": "pid-18f281fe-d1e1-502c-8b87-d945383dc75b",
             "apiVersion": "2015-01-01",
@@ -91,38 +90,35 @@
                 "[variables('storageAccountName')]"
             ],
             "properties": {
-                "containers": [
-                    {
-                        "name": "[variables('cliContainerName')]",
-                        "properties": {
-                            "image": "[variables('cliContainerImage')]",
-                            "command": [
-                                "az",
-                                "storage",
-                                "share",
-                                "create",
-                                "--name",
-                                "[parameters('fileShareName')]"
-                            ],
-                            "environmentVariables": [
-                                {
-                                    "name": "AZURE_STORAGE_KEY",
-                                    "value": "[listKeys(variables('storageAccountName'),'2018-02-01').keys[0].value]"
-                                },
-                                {
-                                    "name": "AZURE_STORAGE_ACCOUNT",
-                                    "value": "[variables('storageAccountName')]"
-                                }
-                            ],
-                            "resources": {
-                                "requests": {
-                                    "cpu": 1,
-                                    "memoryInGB": 1
-                                }
+                "containers": [{
+                    "name": "[variables('cliContainerName')]",
+                    "properties": {
+                        "image": "[variables('cliContainerImage')]",
+                        "command": [
+                            "az",
+                            "storage",
+                            "share",
+                            "create",
+                            "--name",
+                            "[parameters('fileShareName')]"
+                        ],
+                        "environmentVariables": [{
+                                "name": "AZURE_STORAGE_KEY",
+                                "value": "[listKeys(variables('storageAccountName'),'2018-02-01').keys[0].value]"
+                            },
+                            {
+                                "name": "AZURE_STORAGE_ACCOUNT",
+                                "value": "[variables('storageAccountName')]"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": 1,
+                                "memoryInGB": 1
                             }
                         }
                     }
-                ],
+                }],
                 "restartPolicy": "OnFailure",
                 "osType": "Linux"
             }
@@ -136,61 +132,49 @@
                 "[variables('cliContainerGroupName')]"
             ],
             "properties": {
-                "containers": [
-                    {
-                        "name": "[variables('sftpContainerName')]",
-                        "properties": {
-                            "image": "[variables('sftpContainerImage')]",
-                            "environmentVariables": [
-                                {
-                                    "name": "SFTP_USERS",
-                                    "value": "[variables('sftpEnvVariable')]"
-                                }
-                            ],
-                            "resources": {
-                                "requests": {
-                                    "cpu": 2,
-                                    "memoryInGB": 1
-                                }
-                            },
-                            "ports": [
-                                {
-                                    "port": 22
-                                }
-                            ],
-                            "volumeMounts": [
-                                {
-                                    "mountPath": "[concat('/home/', parameters('sftpUser'), '/upload')]",
-                                    "name": "sftpvolume",
-                                    "readOnly": false
-                                }
-                            ]
-                        }
+                "containers": [{
+                    "name": "[variables('sftpContainerName')]",
+                    "properties": {
+                        "image": "[variables('sftpContainerImage')]",
+                        "environmentVariables": [{
+                            "name": "SFTP_USERS",
+                            "value": "[variables('sftpEnvVariable')]"
+                        }],
+                        "resources": {
+                            "requests": {
+                                "cpu": 2,
+                                "memoryInGB": 1
+                            }
+                        },
+                        "ports": [{
+                            "port": 22
+                        }],
+                        "volumeMounts": [{
+                            "mountPath": "[concat('/home/', parameters('sftpUser'), '/upload')]",
+                            "name": "sftpvolume",
+                            "readOnly": false
+                        }]
                     }
-                ],
+                }],
                 "osType": "Linux",
                 "ipAddress": {
                     "type": "Public",
-                    "ports": [
-                        {
-                            "protocol": "TCP",
-                            "port": 22
-                        }
-                    ],
+                    "ports": [{
+                        "protocol": "TCP",
+                        "port": 22
+                    }],
                     "dnsNameLabel": "[parameters('containerGroupDNSLabel')]"
                 },
                 "restartPolicy": "OnFailure",
-                "volumes": [
-                    {
-                        "name": "sftpvolume",
-                        "azureFile": {
-                            "readOnly": false,
-                            "shareName": "[parameters('fileShareName')]",
-                            "storageAccountName": "[variables('storageAccountName')]",
-                            "storageAccountKey": "[listKeys(variables('storageAccountName'),'2018-02-01').keys[0].value]"
-                        }
+                "volumes": [{
+                    "name": "sftpvolume",
+                    "azureFile": {
+                        "readOnly": false,
+                        "shareName": "[parameters('fileShareName')]",
+                        "storageAccountName": "[variables('storageAccountName')]",
+                        "storageAccountKey": "[listKeys(variables('storageAccountName'),'2018-02-01').keys[0].value]"
                     }
-                ]
+                }]
             }
         }
     ],
